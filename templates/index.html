@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero text-center text-white rounded-4 p-5 mb-4">
+  <i class="bi bi-cloud-arrow-up-fill display-3"></i>
+  <h1 class="fw-bold mt-2">Never lose a file again</h1>
+  <p class="lead mb-4">Back up files, verify them with SHA-256, and recover them after a disaster.</p>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg me-2"><i class="bi bi-speedometer2 me-1"></i>Open Dashboard</a>
+  <a href="{{ url_for('history') }}" class="btn btn-outline-light btn-lg"><i class="bi bi-clock-history me-1"></i>Backup History</a>
+</div>
+
+<div class="row g-3 text-center">
+  <div class="col-md-4"><div class="card h-100 p-3"><i class="bi bi-shield-lock fs-1 text-primary"></i><h5 class="mt-2">Secure backups</h5><p class="text-muted mb-0">Files are validated, stored in S3 and verified.</p></div></div>
+  <div class="col-md-4"><div class="card h-100 p-3"><i class="bi bi-fingerprint fs-1 text-primary"></i><h5 class="mt-2">Checksum proof</h5><p class="text-muted mb-0">SHA-256 shows a restored file is identical.</p></div></div>
+  <div class="col-md-4"><div class="card h-100 p-3"><i class="bi bi-arrow-counterclockwise fs-1 text-primary"></i><h5 class="mt-2">Fast recovery</h5><p class="text-muted mb-0">Restore with one click, even after a simulated disaster.</p></div></div>
+</div>
+
+<p class="text-center text-muted mt-4">{{ stats.files }} file(s) backed up &middot; {{ stats.size|filesize }} stored</p>
+{% endblock %}

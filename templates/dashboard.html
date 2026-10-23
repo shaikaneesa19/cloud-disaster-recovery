@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - CloudVault DR{% endblock %}
+{% block content %}
+{% if not is_aws %}
+<div class="alert alert-warning"><i class="bi bi-hdd-fill me-2"></i><strong>LOCAL MODE:</strong>
+  backups are saved in the <code>local_storage</code> folder on this computer. This is <u>not</u> the cloud.
+  Set <code>STORAGE_MODE=aws</code> in <code>.env</code> to use AWS S3.</div>
+{% endif %}
+
+<h2 class="mb-3">Dashboard</h2>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card stat-card h-100"><div class="card-body">
+    <i class="bi bi-files text-primary"></i><div class="stat-value">{{ stats.files }}</div><div class="text-muted">Files backed up</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card stat-card h-100"><div class="card-body">
+    <i class="bi bi-hdd-stack text-info"></i><div class="stat-value">{{ stats.size|filesize }}</div><div class="text-muted">Storage used</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card stat-card h-100"><div class="card-body">
+    <i class="bi bi-check2-circle text-success"></i>
+    <div class="stat-value"><span class="text-success">{{ stats.files }}</span> / <span class="text-danger">{{ stats.failed }}</span></div>
+    <div class="text-muted">Successful / Failed</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card stat-card h-100"><div class="card-body">
+    <i class="bi bi-calendar-check text-warning"></i><div class="stat-value fs-6">{{ stats.last_backup or 'No backups yet' }}</div>
+    <div class="text-muted">Last backup</div></div></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h5 class="card-title"><i class="bi bi-cloud-upload me-2"></i>Back up files</h5>
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" data-busy>
+      <input class="form-control mb-2" type="file" name="files" multiple required>
+      <div class="form-text mb-3">Max {{ max_mb }} MB. Allowed: documents, images, csv, json, zip.</div>
+      <button class="btn btn-primary" type="submit"><i class="bi bi-cloud-arrow-up me-1"></i>Backup now</button>
+    </form>
+    <hr>
+    <small class="text-muted">Recoveries completed: {{ stats.restores_ok }} of {{ stats.restores_total }}</small>
+  </div></div></div>
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h5 class="card-title"><i class="bi bi-bar-chart me-2"></i>Backup activity</h5>
+    <div class="row">
+      <div class="col-5"><canvas id="statusChart"></canvas></div>
+      <div class="col-7"><canvas id="dayChart"></canvas></div>
+    </div>
+  </div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h5 class="card-title"><i class="bi bi-alarm me-2"></i>Backup schedule</h5>
+    <p class="text-muted small">Backs up every file in the <code>watched_folder</code> folder. Unchanged files are skipped, and only one run can happen at a time.</p>
+    <form action="{{ url_for('schedule') }}" method="post">
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" name="enabled" id="enabled" {% if schedule.enabled %}checked{% endif %}>
+        <label class="form-check-label" for="enabled">Enable scheduled backups</label>
+      </div>
+      <div class="input-group mb-3">
+        <span class="input-group-text">Every</span>
+        <input class="form-control" type="number" name="interval" min="1" max="1440" value="{{ schedule.interval_minutes }}" required>
+        <span class="input-group-text">minutes</span>
+      </div>
+      <button class="btn btn-primary" type="submit">Save schedule</button>
+    </form>
+    <form action="{{ url_for('schedule_run_now') }}" method="post" class="mt-2" data-busy>
+      <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="bi bi-play-fill me-1"></i>Run watched-folder backup now</button>
+    </form>
+    <p class="small text-muted mt-3 mb-0">Next run: {{ next_run or 'not scheduled' }} &middot; Last run: {{ schedule.last_run or 'never' }}</p>
+  </div></div></div>
+
+  <div class="col-lg-6"><div class="card h-100"><div class="card-body">
+    <h5 class="card-title"><i class="bi bi-fire me-2"></i>Disaster recovery simulation</h5>
+    <p class="text-muted small">Creates a demo file, backs it up, deletes it locally, restores it, and verifies the checksum.</p>
+    <form action="{{ url_for('simulate') }}" method="post" data-busy>
+      <button class="btn btn-danger" type="submit"><i class="bi bi-lightning-charge me-1"></i>Simulate disaster</button>
+    </form>
+    {% if sim %}
+      <hr>
+      <div class="mb-2"><span class="badge {{ 'bg-success' if sim.status == 'Success' else 'bg-danger' }}">{{ 'RECOVERED' if sim.status == 'Success' else 'FAILED' }}</span>
+        <small class="text-muted ms-2">{{ sim.created_at }}</small></div>
+      <ul class="small mb-0">{% for step in sim_steps %}<li>{{ step }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div></div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>window.chartData = JSON.parse('{{ chart|tojson|safe }}');</script>
+{% endblock %}

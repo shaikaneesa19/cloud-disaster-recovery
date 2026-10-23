@@ -1,0 +1,22 @@
+@'
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+*.pem
+.aws/
+instance/*
+!instance/.gitkeep
+logs/*
+!logs/.gitkeep
+local_storage/*
+!local_storage/.gitkeep
+watched_folder/*
+!watched_folder/.gitkeep
+restored_files/*
+!restored_files/.gitkeep
+demo_files/*
+!demo_files/.gitkeep
+.vscode/
+'@ | Set-Content -Path .gitignore -Encoding ascii

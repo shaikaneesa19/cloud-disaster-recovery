@@ -1,0 +1,8 @@
+body { background: #f1f6fb; }
+.cloud-nav { background: linear-gradient(90deg, #0ea5e9, #2563eb); }
+.hero { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 60%, #4f46e5 100%); box-shadow: 0 10px 30px rgba(37, 99, 235, .25); }
+.card { border: 0; border-radius: 1rem; box-shadow: 0 2px 12px rgba(15, 23, 42, .08); }
+.stat-card i { font-size: 1.6rem; }
+.stat-card .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+.table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+code { color: #2563eb; }
